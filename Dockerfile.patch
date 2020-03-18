@@ -1,6 +1,6 @@
---- ./git/docker/amd64/sqlite/Dockerfile	2019-12-01 09:42:19.862352658 -0700
-+++ Dockerfile	2019-12-01 09:46:27.471287518 -0700
-@@ -36,9 +36,9 @@
+--- git/docker/armv7/sqlite/Dockerfile	2020-03-17 14:18:03.110659273 +0100
++++ git/docker/armv7/sqlite/Dockerfile_patched	2020-03-18 19:14:15.045368767 +0100
+@@ -57,9 +57,9 @@
  WORKDIR /app
  
  # Copies over *only* your manifests and build files
@@ -11,9 +11,9 @@
 +COPY git/rust-toolchain ./rust-toolchain
 +COPY git/build.rs ./build.rs
  
- # Builds your dependencies and removes the
- # dummy project, except the target folder
-@@ -48,7 +48,7 @@
+ ENV CC_armv7_unknown_linux_gnueabihf="/usr/bin/arm-linux-gnueabihf-gcc"
+ ENV CROSS_COMPILE="1"
+@@ -74,7 +74,7 @@
  
  # Copies the complete project
  # To avoid copying unneeded files, use .dockerignore
@@ -22,13 +22,18 @@
  
  # Make sure that we actually build the project
  RUN touch src/main.rs
-@@ -62,34 +62,25 @@
+@@ -86,41 +86,27 @@
+ ######################## RUNTIME IMAGE  ########################
+ # Create a new stage with a minimal image
  # because we already have a binary built
- FROM debian:buster-slim
+-FROM balenalib/armv7hf-debian:buster
++FROM debian:buster-slim
  
 -ENV ROCKET_ENV "staging"
 -ENV ROCKET_PORT=80
 -ENV ROCKET_WORKERS=10
+-
+-RUN [ "cross-build-start" ]
 -
 -# Install needed libraries
 -RUN apt-get update && apt-get install -y \
@@ -40,6 +45,9 @@
 -    && rm -rf /var/lib/apt/lists/*
 -
 -RUN mkdir /data
+-
+-RUN [ "cross-build-end" ]
+-
 -VOLUME /data
 -EXPOSE 80
 -EXPOSE 3012
@@ -56,7 +64,7 @@
  # and the binary from the "build" stage to the current stage
 -COPY Rocket.toml .
 -COPY --from=vault /web-vault ./web-vault
--COPY --from=build app/target/release/bitwarden_rs .
+-COPY --from=build /app/target/armv7-unknown-linux-gnueabihf/release/bitwarden_rs .
 -
 -COPY docker/healthcheck.sh ./healthcheck.sh
 -
@@ -68,7 +76,7 @@
 +COPY debian/config.env /bitwarden_package/etc/bitwarden_rs
 +COPY debian/bitwarden_rs.service /bitwarden_package/usr/lib/systemd/system
 +COPY --from=vault /web-vault /bitwarden_package/usr/share/bitwarden_rs/web-vault
-+COPY --from=build app/target/release/bitwarden_rs /bitwarden_package/usr/local/bin
++COPY --from=build app/target/armv7-unknown-linux-gnueabihf/release/bitwarden_rs /bitwarden_package/usr/local/bin
  
 -# Configures the startup!
 -WORKDIR /
