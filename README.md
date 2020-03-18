@@ -1,3 +1,4 @@
+## This fork enables cross compiling and packaging for armhf architecture (e.g. for Raspbian)
 # Bitwarden_rs debian package helper
 
 [Bitwarden_rs](https://github.com/dani-garcia/bitwarden_rs) is an "Unofficial Bitwarden compatible server written in Rust".
